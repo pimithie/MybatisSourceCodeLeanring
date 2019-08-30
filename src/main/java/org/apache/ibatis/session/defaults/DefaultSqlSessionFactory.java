@@ -36,12 +36,19 @@ import org.apache.ibatis.transaction.managed.ManagedTransactionFactory;
  */
 public class DefaultSqlSessionFactory implements SqlSessionFactory {
 
+  /**
+   * 主xml中的所有配置信息对象，mybatis中几乎所有的组件都会持有此对象的引用
+   */
   private final Configuration configuration;
 
   public DefaultSqlSessionFactory(Configuration configuration) {
     this.configuration = configuration;
   }
 
+  /**
+   * 定义一系列的openSession方法去获取sqlSession对象(对jdbc的Connection对象的封装)
+   * @return
+   */
   @Override
   public SqlSession openSession() {
     return openSessionFromDataSource(configuration.getDefaultExecutorType(), null, false);
