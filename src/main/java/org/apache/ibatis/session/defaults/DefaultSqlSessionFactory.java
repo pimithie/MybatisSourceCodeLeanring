@@ -94,6 +94,13 @@ public class DefaultSqlSessionFactory implements SqlSessionFactory {
     return configuration;
   }
 
+  /**
+   * 统一从此方法中获取SqlSession实例
+   * @param execType executor类型
+   * @param level 事务隔离级别
+   * @param autoCommit 是否自动提交
+   * @return SqlSession实例
+   */
   private SqlSession openSessionFromDataSource(ExecutorType execType, TransactionIsolationLevel level, boolean autoCommit) {
     Transaction tx = null;
     try {

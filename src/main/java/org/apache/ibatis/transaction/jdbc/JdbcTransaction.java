@@ -30,7 +30,7 @@ import org.apache.ibatis.transaction.TransactionException;
  * It relies on the connection retrieved from the dataSource to manage the scope of the transaction.
  * Delays connection retrieval until getConnection() is called.
  * Ignores commit or rollback requests when autocommit is on.
- *
+ * 直接封装了JDBC事务的提交与回滚功能
  * @author Clinton Begin
  *
  * @see JdbcTransactionFactory
@@ -39,10 +39,22 @@ public class JdbcTransaction implements Transaction {
 
   private static final Log log = LogFactory.getLog(JdbcTransaction.class);
 
+  /**
+   * JDBC Connection对象
+   */
   protected Connection connection;
+  /**
+   * 数据库连接池
+   */
   protected DataSource dataSource;
+  /**
+   * 事务隔离级别
+   */
   protected TransactionIsolationLevel level;
   // MEMO: We are aware of the typo. See #941
+  /**
+   * 是否自动提交
+   */
   protected boolean autoCommmit;
 
   public JdbcTransaction(DataSource ds, TransactionIsolationLevel desiredLevel, boolean desiredAutoCommit) {
