@@ -27,13 +27,16 @@ import java.util.Map;
 import java.util.Set;
 
 /**
+ * Mapper注册中心
  * @author Clinton Begin
  * @author Eduardo Macarron
  * @author Lasse Voss
  */
 public class MapperRegistry {
 
+  // 全局xml配置信息
   private final Configuration config;
+  // 已知的mapper缓存
   private final Map<Class<?>, MapperProxyFactory<?>> knownMappers = new HashMap<Class<?>, MapperProxyFactory<?>>();
 
   public MapperRegistry(Configuration config) {
