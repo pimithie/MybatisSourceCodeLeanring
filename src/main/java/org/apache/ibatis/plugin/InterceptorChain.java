@@ -20,6 +20,7 @@ import java.util.Collections;
 import java.util.List;
 
 /**
+ * 封装配置过的mybatis插件
  * @author Clinton Begin
  */
 public class InterceptorChain {

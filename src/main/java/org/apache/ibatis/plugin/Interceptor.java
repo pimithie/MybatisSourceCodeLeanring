@@ -18,10 +18,15 @@ package org.apache.ibatis.plugin;
 import java.util.Properties;
 
 /**
+ * mybatis插件接口定义
  * @author Clinton Begin
  */
 public interface Interceptor {
 
+  /**
+   * 进行拦截
+   * @param invocation 方法的调用
+   */
   Object intercept(Invocation invocation) throws Throwable;
 
   Object plugin(Object target);
