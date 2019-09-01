@@ -36,13 +36,20 @@ import java.lang.reflect.Type;
 import java.util.*;
 
 /**
+ * Mapper代理对象执行的MapperMethod
  * @author Clinton Begin
  * @author Eduardo Macarron
  * @author Lasse Voss
  */
 public class MapperMethod {
 
+  /**
+   * SQL语句
+   */
   private final SqlCommand command;
+  /**
+   * 方法签名
+   */
   private final MethodSignature method;
 
   public MapperMethod(Class<?> mapperInterface, Method method, Configuration config) {
@@ -52,9 +59,12 @@ public class MapperMethod {
 
   public Object execute(SqlSession sqlSession, Object[] args) {
     Object result;
+    /*分为四种类型的SQL,insert,delete,update,select*/
     switch (command.getType()) {
       case INSERT: {
+        // 将参数转换为SQL命令的参数
       Object param = method.convertArgsToSqlCommandParam(args);
+        // 最终通过SqlSession的Executor执行SQL
         result = rowCountResult(sqlSession.insert(command.getName(), param));
         break;
       }
