@@ -59,7 +59,9 @@ public class MapperMethod {
 
   public Object execute(SqlSession sqlSession, Object[] args) {
     Object result;
-    /*分为四种类型的SQL,insert,delete,update,select*/
+    /*分为四种类型的SQL,insert,delete,update,select
+    * insert，update，delete分别统计影响行数
+    * */
     switch (command.getType()) {
       case INSERT: {
         // 将参数转换为SQL命令的参数
@@ -79,15 +81,21 @@ public class MapperMethod {
         break;
       }
       case SELECT:
+        // 为select查询时
+        // 1.方法返回为void，并且拥有结果处理器
         if (method.returnsVoid() && method.hasResultHandler()) {
           executeWithResultHandler(sqlSession, args);
           result = null;
+          // 2.方法返回many--->Collection or Array
         } else if (method.returnsMany()) {
           result = executeForMany(sqlSession, args);
+          // 3.方法返回Map
         } else if (method.returnsMap()) {
           result = executeForMap(sqlSession, args);
+          // 4.方法返回指针
         } else if (method.returnsCursor()) {
           result = executeForCursor(sqlSession, args);
+          // 5.返回单一对象
         } else {
           Object param = method.convertArgsToSqlCommandParam(args);
           result = sqlSession.selectOne(command.getName(), param);
@@ -108,12 +116,16 @@ public class MapperMethod {
 
   private Object rowCountResult(int rowCount) {
     final Object result;
+    // 方法返回值为void
     if (method.returnsVoid()) {
       result = null;
+      // 为Integer or int
     } else if (Integer.class.equals(method.getReturnType()) || Integer.TYPE.equals(method.getReturnType())) {
       result = rowCount;
+      // 为Long or long
     } else if (Long.class.equals(method.getReturnType()) || Long.TYPE.equals(method.getReturnType())) {
       result = (long)rowCount;
+      // 为Boolean or boolean
     } else if (Boolean.class.equals(method.getReturnType()) || Boolean.TYPE.equals(method.getReturnType())) {
       result = rowCount > 0;
     } else {
@@ -123,7 +135,9 @@ public class MapperMethod {
   }
 
   private void executeWithResultHandler(SqlSession sqlSession, Object[] args) {
+    // 获取对应的MappedStatement
     MappedStatement ms = sqlSession.getConfiguration().getMappedStatement(command.getName());
+    // Statement不为CallableStatement，且未配置ResultType or ResultMap
     if (!StatementType.CALLABLE.equals(ms.getStatementType())
         && void.class.equals(ms.getResultMaps().get(0).getType())) {
       throw new BindingException("method " + command.getName()
@@ -131,6 +145,7 @@ public class MapperMethod {
           + " or a resultType attribute in XML so a ResultHandler can be used as a parameter.");
     }
     Object param = method.convertArgsToSqlCommandParam(args);
+    // sql语句是否有limit
     if (method.hasRowBounds()) {
       RowBounds rowBounds = method.extractRowBounds(args);
       sqlSession.select(command.getName(), param, rowBounds, method.extractResultHandler(args));
