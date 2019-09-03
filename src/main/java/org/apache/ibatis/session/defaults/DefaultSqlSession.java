@@ -61,6 +61,9 @@ public class DefaultSqlSession implements SqlSession {
    * 自动提交
    */
   private final boolean autoCommit;
+  /**
+   * 脏位，是否进行了写操作(insert,update,delete)
+   */
   private boolean dirty;
   private List<Cursor<?>> cursorList;
 
@@ -83,6 +86,7 @@ public class DefaultSqlSession implements SqlSession {
   @Override
   public <T> T selectOne(String statement, Object parameter) {
     // Popular vote was to return null on 0 results and throw exception on too many.
+    // 当表中没有数据时，返回null，当超过一条数据时，抛出异常
     List<T> list = this.<T>selectList(statement, parameter);
     if (list.size() == 1) {
       return list.get(0);
@@ -153,6 +157,7 @@ public class DefaultSqlSession implements SqlSession {
   @Override
   public <E> List<E> selectList(String statement, Object parameter, RowBounds rowBounds) {
     try {
+      // 所有的select都依赖于此select方法
       MappedStatement ms = configuration.getMappedStatement(statement);
       return executor.query(ms, wrapCollection(parameter), rowBounds, Executor.NO_RESULT_HANDLER);
     } catch (Exception e) {
@@ -228,6 +233,9 @@ public class DefaultSqlSession implements SqlSession {
   }
 
   @Override
+  /**
+   * 执行事务的commit
+   */
   public void commit() {
     commit(false);
   }
@@ -235,6 +243,8 @@ public class DefaultSqlSession implements SqlSession {
   @Override
   public void commit(boolean force) {
     try {
+      // 当前connection不是autoCommit且脏位为true(说明进行了写操作)，进行事务的提交
+      // 或者可以进行提交
       executor.commit(isCommitOrRollbackRequired(force));
       dirty = false;
     } catch (Exception e) {
@@ -245,6 +255,9 @@ public class DefaultSqlSession implements SqlSession {
   }
 
   @Override
+  /**
+   * 执行事务的rollback
+   */
   public void rollback() {
     rollback(false);
   }
@@ -252,6 +265,8 @@ public class DefaultSqlSession implements SqlSession {
   @Override
   public void rollback(boolean force) {
     try {
+      // 当前connection不是autoCommit且脏位为true(说明进行了写操作)，进行事务的回滚
+      // 或者可以进行回滚
       executor.rollback(isCommitOrRollbackRequired(force));
       dirty = false;
     } catch (Exception e) {
