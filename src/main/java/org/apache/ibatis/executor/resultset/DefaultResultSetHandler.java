@@ -183,17 +183,22 @@ public class DefaultResultSetHandler implements ResultSetHandler {
   public List<Object> handleResultSets(Statement stmt) throws SQLException {
     ErrorContext.instance().activity("handling results").object(mappedStatement.getId());
 
+    // 结果集
     final List<Object> multipleResults = new ArrayList<Object>();
 
     int resultSetCount = 0;
+    // 获取首个结果集
     ResultSetWrapper rsw = getFirstResultSet(stmt);
-
+    // 获取当前MappedStatement对应的resultMaps
     List<ResultMap> resultMaps = mappedStatement.getResultMaps();
     int resultMapCount = resultMaps.size();
     validateResultMapsCount(rsw, resultMapCount);
+    // 遍历所有的ResultMap
     while (rsw != null && resultMapCount > resultSetCount) {
       ResultMap resultMap = resultMaps.get(resultSetCount);
+      // 进行db的resultSet---->POJO的映射
       handleResultSet(rsw, resultMap, multipleResults, null);
+      // 获取下一个ResultSet
       rsw = getNextResultSet(stmt);
       cleanUpAfterHandlingResultSet();
       resultSetCount++;
@@ -213,7 +218,7 @@ public class DefaultResultSetHandler implements ResultSetHandler {
         resultSetCount++;
       }
     }
-
+    // 封装成一个ResultList
     return collapseSingleResultList(multipleResults);
   }
 
@@ -236,13 +241,16 @@ public class DefaultResultSetHandler implements ResultSetHandler {
   }
 
   private ResultSetWrapper getFirstResultSet(Statement stmt) throws SQLException {
+    // 获取此Statement的结果集
     ResultSet rs = stmt.getResultSet();
+    // 为null时：可能获取到是一个写操作的影响行数(updateCount)，或根本没有结果集
     while (rs == null) {
       // move forward to get the first resultset in case the driver
       // doesn't return the resultset as the first result (HSQLDB 2.1)
       if (stmt.getMoreResults()) {
         rs = stmt.getResultSet();
       } else {
+        // 如果无影响行数，说明根本就没有结果集
         if (stmt.getUpdateCount() == -1) {
           // no more results. Must be no resultset
           break;
